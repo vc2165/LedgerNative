@@ -341,7 +341,7 @@ fun SearchScreen(s: AppState) {
     var allTime by remember { mutableStateOf(true) }
     var picked by remember { mutableStateOf(setOf<String>()) }
     val fr = remember { FocusRequester() }
-    LaunchedEffect(Unit) { fr.requestFocus() }
+    LaunchedEffect(Unit) { kotlinx.coroutines.delay(250); try { fr.requestFocus() } catch (_: Exception) {} }
     val results = remember(d, q, allTime, picked, s.month) {
         val t = q.trim().lowercase()
         val amt = t.replace(Regex("[₹,]"), "").toDoubleOrNull()

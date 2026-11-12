@@ -123,12 +123,17 @@ fun EntryScreen(s: AppState, r: Route.EntryEdit) {
     val amtFocus = remember { FocusRequester() }
     val focus = LocalFocusManager.current
     val kb = LocalSoftwareKeyboardController.current
-    LaunchedEffect(nonce) { if (isNew && amt.isEmpty()) { amtFocus.requestFocus(); kb?.show() } }
+    LaunchedEffect(nonce) {
+        if (isNew && amt.isEmpty()) {
+            kotlinx.coroutines.delay(120)
+            try { amtFocus.requestFocus(); kb?.show() } catch (_: Exception) {}
+        }
+    }
     if (cat == "other" && !catTouched) cat = null
 
     fun commit(): Entry? {
         val a = amt.toDoubleOrNull()
-        if (a == null || a <= 0) { s.toast("Enter an amount"); amtFocus.requestFocus(); s.tick("reject"); return null }
+        if (a == null || a <= 0) { s.toast("Enter an amount"); try { amtFocus.requestFocus() } catch (_: Exception) {}; s.tick("reject"); return null }
         val c = cat ?: if (desc.isNotBlank()) d.autoCat(desc) else "other"
         var rec = Entry(
             existing?.id ?: uid(), date, desc.trim().ifEmpty { "(unlabelled)" }, r2(a), c, bucket,
