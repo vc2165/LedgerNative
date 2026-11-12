@@ -104,8 +104,8 @@ fun ReportScreen(s: AppState, modifier: Modifier) {
             targetState = s.month,
             transitionSpec = {
                 val fwd = targetState > initialState
-                (slideInHorizontally(tween(280)) { if (fwd) it / 4 else -it / 4 } + fadeIn(tween(220))) togetherWith
-                    (slideOutHorizontally(tween(220)) { if (fwd) -it / 4 else it / 4 } + fadeOut(tween(160)))
+                (slideInHorizontally(tween(220)) { if (fwd) it / 12 else -it / 12 } + fadeIn(tween(200))) togetherWith
+                    (slideOutHorizontally(tween(180)) { if (fwd) -it / 12 else it / 12 } + fadeOut(tween(120)))
             },
             modifier = Modifier.padding(top = pad.calculateTopPadding()).fillMaxSize().monthSwipe(s),
             label = "month",
@@ -257,7 +257,7 @@ fun Table(head: List<String>, rows: List<List<String>>, boldLast: Boolean = fals
 @Composable
 fun Donut(parts: List<Pair<Double, Color>>, total: Double, modifier: Modifier) {
     val p = remember { Animatable(0f) }
-    LaunchedEffect(parts) { p.snapTo(0f); p.animateTo(1f, tween(800, easing = FastOutSlowInEasing)) }
+    LaunchedEffect(parts) { p.snapTo(0f); p.animateTo(1f, tween(450, easing = FastOutSlowInEasing)) }
     Box(modifier, contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
             val sw = 18.dp.toPx()
@@ -283,7 +283,7 @@ fun Donut(parts: List<Pair<Double, Color>>, total: Double, modifier: Modifier) {
 @Composable
 fun SplitBar(parts: List<Pair<Double, Color>>, total: Double) {
     val p = remember { Animatable(0f) }
-    LaunchedEffect(parts) { p.animateTo(1f, tween(700, easing = FastOutSlowInEasing)) }
+    LaunchedEffect(parts) { p.animateTo(1f, tween(400, easing = FastOutSlowInEasing)) }
     Row(Modifier.fillMaxWidth().height(10.dp).clip(RoundedCornerShape(5.dp)), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
         parts.filter { it.first > 0 }.forEach { (v, col) ->
             Box(Modifier.weight((v / total).toFloat() * p.value + 0.0001f).fillMaxSize().background(col))

@@ -134,7 +134,7 @@ fun Meter(label: String, used: String, fraction: Float?, of: String, modifier: M
         Text(used, style = MaterialTheme.typography.titleMedium)
         if (fraction != null) {
             val anim = remember { Animatable(0f) }
-            LaunchedEffect(fraction) { anim.animateTo(fraction.coerceIn(0f, 1f), tween(700, easing = FastOutSlowInEasing)) }
+            LaunchedEffect(fraction) { anim.animateTo(fraction.coerceIn(0f, 1f), tween(400, easing = FastOutSlowInEasing)) }
             val col = when { fraction >= 1f -> Bad; fraction >= 0.8f -> Warn; else -> Purple }
             Spacer(Modifier.height(6.dp))
             LinearProgressIndicator(

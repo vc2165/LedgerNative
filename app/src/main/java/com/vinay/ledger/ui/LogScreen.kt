@@ -136,8 +136,8 @@ fun LogScreen(s: AppState, modifier: Modifier, onFab: (Boolean) -> Unit) {
             targetState = s.month,
             transitionSpec = {
                 val fwd = targetState > initialState
-                (slideInHorizontally(tween(280)) { if (fwd) it / 4 else -it / 4 } + fadeIn(tween(220))) togetherWith
-                    (slideOutHorizontally(tween(220)) { if (fwd) -it / 4 else it / 4 } + fadeOut(tween(160)))
+                (slideInHorizontally(tween(220)) { if (fwd) it / 12 else -it / 12 } + fadeIn(tween(200))) togetherWith
+                    (slideOutHorizontally(tween(180)) { if (fwd) -it / 12 else it / 12 } + fadeOut(tween(120)))
             },
             modifier = Modifier.padding(top = pad.calculateTopPadding()).fillMaxSize().monthSwipe(s),
             label = "month",
@@ -205,7 +205,7 @@ private fun Hero(s: AppState, st: MonthStats) {
             Modifier.background(Brush.linearGradient(listOf(PurpleDeep, Purple, Color(0xFF6A3FD6)))).padding(20.dp)
         ) {
             Text("Spent this month", color = Color.White.copy(alpha = .78f), style = MaterialTheme.typography.bodyMedium)
-            val shown by animateFloatAsState(st.total.toFloat(), tween(450), label = "total")
+            val shown by animateFloatAsState(st.total.toFloat(), tween(300), label = "total")
             Text(inr(shown.toDouble()), color = Color.White, fontSize = 38.sp, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(14.dp))
             Surface(shape = RoundedCornerShape(18.dp), color = Color.White) {
@@ -293,7 +293,7 @@ fun SwipeEntry(s: AppState, e: Entry) {
         backgroundContent = {
             val active = state.targetValue == SwipeToDismissBoxValue.EndToStart
             val bg by animateColorAsState(if (active) Bad else Bad.copy(alpha = .75f), label = "bg")
-            val sc by animateFloatAsState(if (active) 1.15f else 0.9f, label = "icon")
+            val sc by animateFloatAsState(if (active) 1.05f else 1f, label = "icon")
             Box(Modifier.fillMaxSize().clip(RoundedCornerShape(14.dp)).background(bg).padding(end = 20.dp), contentAlignment = Alignment.CenterEnd) {
                 Icon(Icons.Outlined.Delete, "Delete", tint = Color.White, modifier = Modifier.scale(sc))
             }

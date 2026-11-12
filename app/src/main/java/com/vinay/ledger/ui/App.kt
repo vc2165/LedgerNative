@@ -77,10 +77,11 @@ fun LedgerApp(s: AppState, locked: Boolean, onUnlock: () -> Unit) {
         AnimatedContent(
             targetState = s.stack.size to s.stack.lastOrNull(),
             transitionSpec = {
+                // gentle Material "shared axis": a small slide with a fade
                 if (targetState.first > initialState.first)
-                    (slideInHorizontally(tween(300)) { it / 3 } + fadeIn(tween(220))) togetherWith fadeOut(tween(150))
+                    (slideInHorizontally(tween(250)) { it / 12 } + fadeIn(tween(200))) togetherWith fadeOut(tween(100))
                 else
-                    fadeIn(tween(150)) togetherWith (slideOutHorizontally(tween(260)) { it / 3 } + fadeOut(tween(200)))
+                    fadeIn(tween(150)) togetherWith (slideOutHorizontally(tween(200)) { it / 12 } + fadeOut(tween(150)))
             },
             contentKey = { it.first },
             label = "routes",
@@ -142,7 +143,7 @@ private fun MainTabs(s: AppState) {
         AnimatedContent(
             targetState = s.tab,
             transitionSpec = {
-                (fadeIn(tween(220, delayMillis = 60)) + scaleIn(tween(220, delayMillis = 60), initialScale = 0.97f)) togetherWith fadeOut(tween(90))
+                fadeIn(tween(180)) togetherWith fadeOut(tween(120))
             },
             label = "tabs",
         ) { tab ->
