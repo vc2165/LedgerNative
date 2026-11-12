@@ -13,6 +13,10 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -77,11 +81,13 @@ fun LedgerApp(s: AppState, locked: Boolean, onUnlock: () -> Unit) {
         AnimatedContent(
             targetState = s.stack.size to s.stack.lastOrNull(),
             transitionSpec = {
-                // gentle Material "shared axis": a small slide with a fade
+                // like the original app's bottom sheets: slide up to open, slide down to close
                 if (targetState.first > initialState.first)
-                    (slideInHorizontally(tween(250)) { it / 12 } + fadeIn(tween(200))) togetherWith fadeOut(tween(100))
+                    (slideInVertically(tween(340, easing = EaseSheet)) { it } togetherWith ExitTransition.KeepUntilTransitionsFinished)
+                        .apply { targetContentZIndex = 1f }
                 else
-                    fadeIn(tween(150)) togetherWith (slideOutHorizontally(tween(200)) { it / 12 } + fadeOut(tween(150)))
+                    (EnterTransition.None togetherWith slideOutVertically(tween(220, easing = EaseSheetOut)) { it })
+                        .apply { targetContentZIndex = -1f }
             },
             contentKey = { it.first },
             label = "routes",
@@ -112,6 +118,7 @@ private fun RouteScreen(s: AppState, r: Route) {
 @Composable
 private fun MainTabs(s: AppState) {
     var fabExpanded by remember { mutableStateOf(true) }
+    val shift = with(androidx.compose.ui.platform.LocalDensity.current) { 28.dp.roundToPx() }
     Scaffold(
         snackbarHost = { SnackbarHost(s.snackbar) },
         floatingActionButton = {
@@ -143,7 +150,8 @@ private fun MainTabs(s: AppState) {
         AnimatedContent(
             targetState = s.tab,
             transitionSpec = {
-                fadeIn(tween(180)) togetherWith fadeOut(tween(120))
+                val fwd = targetState.ordinal > initialState.ordinal
+                (slideInHorizontally(tween(260, easing = EaseStd)) { if (fwd) shift else -shift } + fadeIn(tween(260, easing = EaseStd))) togetherWith fadeOut(tween(90))
             },
             label = "tabs",
         ) { tab ->

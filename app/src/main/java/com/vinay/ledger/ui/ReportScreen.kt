@@ -60,6 +60,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
@@ -100,12 +101,13 @@ fun ReportScreen(s: AppState, modifier: Modifier) {
         topBar = { MonthBar(s, scroll, search = false) },
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
     ) { pad ->
+        val shift = with(androidx.compose.ui.platform.LocalDensity.current) { 28.dp.roundToPx() }
         AnimatedContent(
             targetState = s.month,
             transitionSpec = {
                 val fwd = targetState > initialState
-                (slideInHorizontally(tween(220)) { if (fwd) it / 12 else -it / 12 } + fadeIn(tween(200))) togetherWith
-                    (slideOutHorizontally(tween(180)) { if (fwd) -it / 12 else it / 12 } + fadeOut(tween(120)))
+                (slideInHorizontally(tween(260, easing = EaseStd)) { if (fwd) shift else -shift } + fadeIn(tween(260, easing = EaseStd))) togetherWith
+                    fadeOut(tween(90))
             },
             modifier = Modifier.padding(top = pad.calculateTopPadding()).fillMaxSize().monthSwipe(s),
             label = "month",
@@ -257,8 +259,10 @@ fun Table(head: List<String>, rows: List<List<String>>, boldLast: Boolean = fals
 @Composable
 fun Donut(parts: List<Pair<Double, Color>>, total: Double, modifier: Modifier) {
     val p = remember { Animatable(0f) }
-    LaunchedEffect(parts) { p.snapTo(0f); p.animateTo(1f, tween(450, easing = FastOutSlowInEasing)) }
-    Box(modifier, contentAlignment = Alignment.Center) {
+    LaunchedEffect(parts) { p.snapTo(0f); p.animateTo(1f, tween(700, easing = EaseStd)) }
+    val pop = remember { Animatable(0f) }
+    LaunchedEffect(Unit) { pop.animateTo(1f, tween(450, easing = EaseStd)) }
+    Box(modifier.graphicsLayer { val k = pop.value; scaleX = 0.88f + 0.12f * k; scaleY = scaleX; rotationZ = -20f * (1 - k); alpha = k }, contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
             val sw = 18.dp.toPx()
             val r = size.minDimension / 2 - sw / 2
@@ -283,7 +287,7 @@ fun Donut(parts: List<Pair<Double, Color>>, total: Double, modifier: Modifier) {
 @Composable
 fun SplitBar(parts: List<Pair<Double, Color>>, total: Double) {
     val p = remember { Animatable(0f) }
-    LaunchedEffect(parts) { p.animateTo(1f, tween(400, easing = FastOutSlowInEasing)) }
+    LaunchedEffect(parts) { p.animateTo(1f, tween(700, easing = EaseStd)) }
     Row(Modifier.fillMaxWidth().height(10.dp).clip(RoundedCornerShape(5.dp)), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
         parts.filter { it.first > 0 }.forEach { (v, col) ->
             Box(Modifier.weight((v / total).toFloat() * p.value + 0.0001f).fillMaxSize().background(col))

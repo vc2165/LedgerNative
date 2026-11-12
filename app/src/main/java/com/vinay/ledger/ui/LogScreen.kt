@@ -132,12 +132,13 @@ fun LogScreen(s: AppState, modifier: Modifier, onFab: (Boolean) -> Unit) {
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
     ) { pad ->
         var prev by remember { mutableStateOf(s.month) }
+        val shift = with(androidx.compose.ui.platform.LocalDensity.current) { 28.dp.roundToPx() }
         AnimatedContent(
             targetState = s.month,
             transitionSpec = {
                 val fwd = targetState > initialState
-                (slideInHorizontally(tween(220)) { if (fwd) it / 12 else -it / 12 } + fadeIn(tween(200))) togetherWith
-                    (slideOutHorizontally(tween(180)) { if (fwd) -it / 12 else it / 12 } + fadeOut(tween(120)))
+                (slideInHorizontally(tween(260, easing = EaseStd)) { if (fwd) shift else -shift } + fadeIn(tween(260, easing = EaseStd))) togetherWith
+                    fadeOut(tween(90))
             },
             modifier = Modifier.padding(top = pad.calculateTopPadding()).fillMaxSize().monthSwipe(s),
             label = "month",
@@ -205,7 +206,7 @@ private fun Hero(s: AppState, st: MonthStats) {
             Modifier.background(Brush.linearGradient(listOf(PurpleDeep, Purple, Color(0xFF6A3FD6)))).padding(20.dp)
         ) {
             Text("Spent this month", color = Color.White.copy(alpha = .78f), style = MaterialTheme.typography.bodyMedium)
-            val shown by animateFloatAsState(st.total.toFloat(), tween(300), label = "total")
+            val shown by animateFloatAsState(st.total.toFloat(), tween(380, easing = EaseStd), label = "total")
             Text(inr(shown.toDouble()), color = Color.White, fontSize = 38.sp, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(14.dp))
             Surface(shape = RoundedCornerShape(18.dp), color = Color.White) {
@@ -293,7 +294,7 @@ fun SwipeEntry(s: AppState, e: Entry) {
         backgroundContent = {
             val active = state.targetValue == SwipeToDismissBoxValue.EndToStart
             val bg by animateColorAsState(if (active) Bad else Bad.copy(alpha = .75f), label = "bg")
-            val sc by animateFloatAsState(if (active) 1.05f else 1f, label = "icon")
+            val sc by animateFloatAsState(1f, label = "icon")
             Box(Modifier.fillMaxSize().clip(RoundedCornerShape(14.dp)).background(bg).padding(end = 20.dp), contentAlignment = Alignment.CenterEnd) {
                 Icon(Icons.Outlined.Delete, "Delete", tint = Color.White, modifier = Modifier.scale(sc))
             }

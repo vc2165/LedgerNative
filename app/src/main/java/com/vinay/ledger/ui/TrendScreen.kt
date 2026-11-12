@@ -188,7 +188,7 @@ private fun BigDiff(diff: Double) {
 @Composable
 private fun Bars(labels: List<String>, values: List<Double>, highlight: Int) {
     val p = remember { Animatable(0f) }
-    LaunchedEffect(values) { p.snapTo(0f); p.animateTo(1f, tween(450, easing = FastOutSlowInEasing)) }
+    LaunchedEffect(values) { p.snapTo(0f); p.animateTo(1f, tween(550, easing = EaseStd)) }
     val max = (values.maxOrNull() ?: 1.0).coerceAtLeast(1.0)
     Row(Modifier.fillMaxWidth().height(180.dp).padding(top = 18.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Bottom) {
         values.forEachIndexed { i, v ->
