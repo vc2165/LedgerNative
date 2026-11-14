@@ -157,7 +157,7 @@ fun SettingsScreen(s: AppState, modifier: Modifier) {
     ) { pad ->
         val saveTot = d.plan.saves.sumOf { it.amount }
         val bills = d.plan.billList
-        LazyColumn(flingBehavior = rememberCalmFling(), Modifier.padding(top = pad.calculateTopPadding()), contentPadding = PaddingValues(bottom = 24.dp)) {
+        LazyColumn(flingBehavior = rememberCalmFling(), modifier = Modifier.padding(top = pad.calculateTopPadding()), contentPadding = PaddingValues(bottom = 24.dp)) {
             item {
                 SectionCard(title = "Money") {
                     NavRow("Monthly plan", "Salary ${inr(d.plan.salary)}, saving ${inr(saveTot)}" + (if (bills.isNotEmpty()) ", bills ${inr(bills.sumOf { it.amount })}" else "") + " a month",
@@ -366,7 +366,7 @@ fun CategoriesScreen(s: AppState) {
         Modifier.nestedScroll(scroll.nestedScrollConnection),
         topBar = { SubBar("Categories", { s.pop() }, scroll) { IconButton(onClick = { s.push(Route.CatEdit(null)) }) { Icon(Icons.Outlined.Add, "New category") } } },
     ) { pad ->
-        LazyColumn(flingBehavior = rememberCalmFling(), Modifier.padding(pad), contentPadding = PaddingValues(bottom = 24.dp)) {
+        LazyColumn(flingBehavior = rememberCalmFling(), modifier = Modifier.padding(pad), contentPadding = PaddingValues(bottom = 24.dp)) {
             item {
                 SectionCard {
                     d.cats.entries.sortedBy { it.value.name.lowercase() }.forEach { (id, c) ->
@@ -593,7 +593,7 @@ fun ExportScreen(s: AppState) {
         shareBytes(ctx, d.buildMonthXlsx(k), "ledger-${mLong(k).lowercase()}-${k.take(4)}.xlsx", XLSX)
     }
     Scaffold(topBar = { SubBar("Export to Excel", { s.pop() }) }) { pad ->
-        LazyColumn(flingBehavior = rememberCalmFling(), Modifier.padding(pad), contentPadding = PaddingValues(bottom = 24.dp)) {
+        LazyColumn(flingBehavior = rememberCalmFling(), modifier = Modifier.padding(pad), contentPadding = PaddingValues(bottom = 24.dp)) {
             item {
                 SectionCard {
                     NavRow(mFull(thisMonth()), "${d.inMonth(thisMonth()).size} expenses, laid out like your monthly report", Icons.Outlined.TableChart) { month(thisMonth()) }

@@ -312,7 +312,7 @@ fun TypeListScreen(s: AppState, k: String, b: Bucket) {
     }
     val scroll = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(Modifier.nestedScroll(scroll.nestedScrollConnection), topBar = { SubBar("${b.label}, ${mShort(k)}", { s.pop() }, scroll) }) { pad ->
-        LazyColumn(flingBehavior = rememberCalmFling(), Modifier.padding(pad), contentPadding = PaddingValues(bottom = 24.dp)) {
+        LazyColumn(flingBehavior = rememberCalmFling(), modifier = Modifier.padding(pad), contentPadding = PaddingValues(bottom = 24.dp)) {
             item {
                 SectionCard {
                     KvRow("${es.size} expense${if (es.size == 1) "" else "s"}", inr(st.b[b]!!, true), bold = true, sub = pct(st.b[b]!!, st.total))
@@ -355,7 +355,7 @@ fun SearchScreen(s: AppState) {
         }.sortedWith(compareByDescending<com.vinay.ledger.data.Entry> { it.date }.thenByDescending { it.created })
     }
     Scaffold(topBar = { SubBar("Search", { s.pop() }) }) { pad ->
-        LazyColumn(flingBehavior = rememberCalmFling(), Modifier.padding(pad), contentPadding = PaddingValues(bottom = 24.dp)) {
+        LazyColumn(flingBehavior = rememberCalmFling(), modifier = Modifier.padding(pad), contentPadding = PaddingValues(bottom = 24.dp)) {
             item {
                 Column(Modifier.padding(horizontal = 16.dp)) {
                     TextField(

@@ -95,7 +95,7 @@ private fun TrendBody(s: AppState, pad: PaddingValues, ms: List<String>) {
         val pr = remember(d) { ps.map { d.recurringBy(it) } }
         val goMonth = { m: String -> s.month = m; s.tab = Tab.REPORT }
 
-        LazyColumn(flingBehavior = rememberCalmFling(), Modifier.padding(top = pad.calculateTopPadding()), contentPadding = PaddingValues(bottom = 24.dp)) {
+        LazyColumn(flingBehavior = rememberCalmFling(), modifier = Modifier.padding(top = pad.calculateTopPadding()), contentPadding = PaddingValues(bottom = 24.dp)) {
             item {
                 SectionCard(title = "Recurring spend, month by month") {
                     Bars(last.map { mShort(it) }, s6.map { it.b[Bucket.RECURRING]!! }, last.indexOf(cur))

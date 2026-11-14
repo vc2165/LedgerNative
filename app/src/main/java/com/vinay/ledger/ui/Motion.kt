@@ -1,6 +1,7 @@
 package com.vinay.ledger.ui
 
 import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.animateDecay
 
 // Same curves the original Ledger used
 val EaseStd = CubicBezierEasing(0.2f, 0.8f, 0.2f, 1f)      // tabs, months, charts
