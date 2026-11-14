@@ -104,15 +104,17 @@ fun Modifier.monthSwipe(s: AppState): Modifier = this.pointerInput(Unit) {
         var dx = 0f
         var dy = 0f
         var ended = false
+        var taken = false // a row swipe or list scroll used this gesture
         while (!ended) {
             val ev = awaitPointerEvent(androidx.compose.ui.input.pointer.PointerEventPass.Final)
             val ch = ev.changes.firstOrNull { it.id == down.id } ?: break
+            if (ch.isConsumed) taken = true
             dx += ch.position.x - ch.previousPosition.x
             dy += ch.position.y - ch.previousPosition.y
             if (!ch.pressed) {
                 ended = true
                 val quick = ch.uptimeMillis - t0 < 550
-                if (quick && kotlin.math.abs(dx) > size.width * 0.35f && kotlin.math.abs(dx) > kotlin.math.abs(dy) * 2.5f)
+                if (!taken && quick && kotlin.math.abs(dx) > size.width * 0.35f && kotlin.math.abs(dx) > kotlin.math.abs(dy) * 2.5f)
                     shiftMonth(s, if (dx < 0) 1 else -1)
             }
         }
