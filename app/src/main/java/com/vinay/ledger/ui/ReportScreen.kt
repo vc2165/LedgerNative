@@ -136,7 +136,7 @@ private fun MonthReport(s: AppState, k: String) {
     if (cats.size > 6) top += Triple("Everything else", cats.drop(6).sumOf { it.value }, Color(0xFFC9CCC6))
     var full by remember { mutableStateOf(false) }
 
-    LazyColumn(contentPadding = PaddingValues(bottom = 24.dp), modifier = Modifier.fillMaxSize()) {
+    LazyColumn(flingBehavior = rememberCalmFling(), contentPadding = PaddingValues(bottom = 24.dp), modifier = Modifier.fillMaxSize()) {
         item {
             SectionCard {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -312,7 +312,7 @@ fun TypeListScreen(s: AppState, k: String, b: Bucket) {
     }
     val scroll = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(Modifier.nestedScroll(scroll.nestedScrollConnection), topBar = { SubBar("${b.label}, ${mShort(k)}", { s.pop() }, scroll) }) { pad ->
-        LazyColumn(Modifier.padding(pad), contentPadding = PaddingValues(bottom = 24.dp)) {
+        LazyColumn(flingBehavior = rememberCalmFling(), Modifier.padding(pad), contentPadding = PaddingValues(bottom = 24.dp)) {
             item {
                 SectionCard {
                     KvRow("${es.size} expense${if (es.size == 1) "" else "s"}", inr(st.b[b]!!, true), bold = true, sub = pct(st.b[b]!!, st.total))
@@ -355,7 +355,7 @@ fun SearchScreen(s: AppState) {
         }.sortedWith(compareByDescending<com.vinay.ledger.data.Entry> { it.date }.thenByDescending { it.created })
     }
     Scaffold(topBar = { SubBar("Search", { s.pop() }) }) { pad ->
-        LazyColumn(Modifier.padding(pad), contentPadding = PaddingValues(bottom = 24.dp)) {
+        LazyColumn(flingBehavior = rememberCalmFling(), Modifier.padding(pad), contentPadding = PaddingValues(bottom = 24.dp)) {
             item {
                 Column(Modifier.padding(horizontal = 16.dp)) {
                     TextField(

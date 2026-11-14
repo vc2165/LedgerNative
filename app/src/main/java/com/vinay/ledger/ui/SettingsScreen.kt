@@ -157,7 +157,7 @@ fun SettingsScreen(s: AppState, modifier: Modifier) {
     ) { pad ->
         val saveTot = d.plan.saves.sumOf { it.amount }
         val bills = d.plan.billList
-        LazyColumn(Modifier.padding(top = pad.calculateTopPadding()), contentPadding = PaddingValues(bottom = 24.dp)) {
+        LazyColumn(flingBehavior = rememberCalmFling(), Modifier.padding(top = pad.calculateTopPadding()), contentPadding = PaddingValues(bottom = 24.dp)) {
             item {
                 SectionCard(title = "Money") {
                     NavRow("Monthly plan", "Salary ${inr(d.plan.salary)}, saving ${inr(saveTot)}" + (if (bills.isNotEmpty()) ", bills ${inr(bills.sumOf { it.amount })}" else "") + " a month",
@@ -307,7 +307,7 @@ fun PlanScreen(s: AppState, k: String?) {
             }
         },
     ) { pad ->
-        Column(Modifier.padding(pad).verticalScroll(rememberScrollState()).padding(horizontal = 20.dp)) {
+        Column(Modifier.padding(pad).verticalScroll(rememberScrollState(), flingBehavior = rememberCalmFling()).padding(horizontal = 20.dp)) {
             Muted(if (k != null) "Applies to this month only. Your usual numbers live in Settings, Monthly plan." else "Used for every month unless you change a particular month from its report.")
             FieldLabel("Salary")
             FilledField(salary, { salary = it.replace(Regex("[^\\d.]"), "") }, "Salary", Modifier.fillMaxWidth(), numeric = true)
@@ -366,7 +366,7 @@ fun CategoriesScreen(s: AppState) {
         Modifier.nestedScroll(scroll.nestedScrollConnection),
         topBar = { SubBar("Categories", { s.pop() }, scroll) { IconButton(onClick = { s.push(Route.CatEdit(null)) }) { Icon(Icons.Outlined.Add, "New category") } } },
     ) { pad ->
-        LazyColumn(Modifier.padding(pad), contentPadding = PaddingValues(bottom = 24.dp)) {
+        LazyColumn(flingBehavior = rememberCalmFling(), Modifier.padding(pad), contentPadding = PaddingValues(bottom = 24.dp)) {
             item {
                 SectionCard {
                     d.cats.entries.sortedBy { it.value.name.lowercase() }.forEach { (id, c) ->
@@ -432,7 +432,7 @@ fun CatEditScreen(s: AppState, id: String?) {
             }
         },
     ) { pad ->
-        Column(Modifier.padding(pad).verticalScroll(rememberScrollState()).padding(horizontal = 20.dp)) {
+        Column(Modifier.padding(pad).verticalScroll(rememberScrollState(), flingBehavior = rememberCalmFling()).padding(horizontal = 20.dp)) {
             FieldLabel("Name")
             FilledField(name, { name = it }, "e.g. Gym", Modifier.fillMaxWidth())
             FieldLabel("Colour")
@@ -542,7 +542,7 @@ fun ImportScreen(s: AppState) {
             }
         },
     ) { pad ->
-        Column(Modifier.padding(pad).verticalScroll(rememberScrollState()).padding(horizontal = 20.dp)) {
+        Column(Modifier.padding(pad).verticalScroll(rememberScrollState(), flingBehavior = rememberCalmFling()).padding(horizontal = 20.dp)) {
             Muted("Copy the date, description and amount columns from your sheet and paste them below. A row without a date uses the date above it.")
             Spacer(Modifier.height(12.dp))
             TextField(
@@ -593,7 +593,7 @@ fun ExportScreen(s: AppState) {
         shareBytes(ctx, d.buildMonthXlsx(k), "ledger-${mLong(k).lowercase()}-${k.take(4)}.xlsx", XLSX)
     }
     Scaffold(topBar = { SubBar("Export to Excel", { s.pop() }) }) { pad ->
-        LazyColumn(Modifier.padding(pad), contentPadding = PaddingValues(bottom = 24.dp)) {
+        LazyColumn(flingBehavior = rememberCalmFling(), Modifier.padding(pad), contentPadding = PaddingValues(bottom = 24.dp)) {
             item {
                 SectionCard {
                     NavRow(mFull(thisMonth()), "${d.inMonth(thisMonth()).size} expenses, laid out like your monthly report", Icons.Outlined.TableChart) { month(thisMonth()) }

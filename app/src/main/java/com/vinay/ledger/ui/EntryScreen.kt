@@ -176,7 +176,7 @@ fun EntryScreen(s: AppState, r: Route.EntryEdit) {
             }
         },
     ) { pad ->
-        Column(Modifier.padding(pad).fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp)) {
+        Column(Modifier.padding(pad).fillMaxSize().verticalScroll(rememberScrollState(), flingBehavior = rememberCalmFling()).padding(horizontal = 20.dp)) {
             // Amount
             Row(Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 16.dp), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                 Text("₹", fontSize = 34.sp, color = MaterialTheme.colorScheme.outline)

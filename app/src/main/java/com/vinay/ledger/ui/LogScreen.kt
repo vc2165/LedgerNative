@@ -186,7 +186,7 @@ private fun MonthLog(s: AppState, k: String, onFab: (Boolean) -> Unit) {
             last = y
         }
     }
-    LazyColumn(state = list, contentPadding = PaddingValues(bottom = 96.dp), modifier = Modifier.fillMaxSize()) {
+    LazyColumn(flingBehavior = rememberCalmFling(), state = list, contentPadding = PaddingValues(bottom = 96.dp), modifier = Modifier.fillMaxSize()) {
         item(key = "hero") { Hero(s, st) }
         if (k == thisMonth()) {
             val notes = monthNotes(s, st)
