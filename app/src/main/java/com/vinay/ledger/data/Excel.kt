@@ -119,21 +119,57 @@ private fun LedgerData.expenseRows(es: List<Entry>): List<List<Cell>> =
     listOf(listOf(t("Date"), t("Description"), t("Category"), t("Amount (₹)"), t("Type (if set)"))) +
         es.map { e -> listOf(d(e.date), t(e.desc), t(cat(e.cat).name), n(e.amount), t(e.bucket?.label ?: "")) }
 
+/** Salary, every saving (RD, loan, ELSS…), bills, spending and what's left — one row each, per month. */
+private fun LedgerData.moneyRows(ms: List<String>): List<List<Cell>> {
+    val rows = ArrayList<List<Cell>>()
+    rows += listOf(t("Month"), t("Kind"), t("Item"), t("Amount (₹)"), t("Note"))
+    for (m in ms) {
+        val st = stats(m)
+        val own = months.containsKey(m)
+        rows += listOf(t(mFull(m)), t("Income"), t("Salary"), n(st.inc.salary), t(if (own) "set for this month" else "from monthly plan"))
+        st.inc.saves.forEach { rows += listOf(t(mFull(m)), t("Saving / investment"), t(it.name), n(it.amount), t("")) }
+        rows += listOf(t(mFull(m)), t("Saving / investment"), t("Total saved / invested"), n(st.saved), t(""))
+        st.bills.forEach { rows += listOf(t(mFull(m)), t("Fixed bill"), t(it.name), n(it.amount), t(if (it.paid > 0) "paid ${inr(it.paid)}" else if (st.pendingList.any { p -> p.name == it.name }) "not paid yet" else "not logged")) }
+        rows += listOf(t(mFull(m)), t("Spending"), t("Total spent"), n(r2(st.total)), t("${st.es.size} expenses"))
+        rows += listOf(t(mFull(m)), t("Spending"), t("Fixed"), n(r2(st.b[Bucket.FIXED]!!)), t(""))
+        rows += listOf(t(mFull(m)), t("Spending"), t("Recurring"), n(r2(st.b[Bucket.RECURRING]!!)), t(""))
+        rows += listOf(t(mFull(m)), t("Spending"), t("One-offs"), n(r2(st.b[Bucket.ONEOFF]!!)), t(""))
+        rows += listOf(t(mFull(m)), t("Result"), t(if (st.bills.isNotEmpty()) "Left after savings and bills" else "Left after savings"), n(r2(st.net)), t(""))
+        val pctSaved = if (st.inc.salary > 0) Math.round(st.saved / st.inc.salary * 1000) / 10.0 else 0.0
+        rows += listOf(t(mFull(m)), t("Result"), t("Share of salary saved / invested (%)"), n(pctSaved), t(""))
+    }
+    return rows
+}
+
+/** A plain-language sheet so anyone (or an AI) reading the file knows what each number means. */
+private fun readMe(): List<List<Cell>> = listOf(
+    listOf(t("About this file")),
+    listOf(t("Exported from Ledger, a personal expense tracker. All amounts are Indian rupees (₹).")),
+    listOf(t("Salary: monthly take-home salary.")),
+    listOf(t("Saving / investment: money set aside from salary each month (for example Postal RD, home / land loan EMI, ELSS). These are not expenses.")),
+    listOf(t("Fixed bill: a planned bill such as PG rent. It counts as spent from the 1st until it is logged as an expense.")),
+    listOf(t("Expense types: Fixed = rent and bills; Recurring = everyday spending (the default); One-off = things that don't repeat.")),
+    listOf(t("Left after savings = Salary − savings / investments − total spent − bills not paid yet.")),
+    listOf(t("Sheets: 'Money in and out' has salary, every saving, bills and totals per month; 'Expenses' has every expense; the other sheets are summaries.")),
+)
+
 fun LedgerData.buildAllXlsx(): ByteArray {
     val es = entries.sortedWith(compareBy<Entry>({ it.date }, { it.created }))
     val ms = monthsWithData()
     val st = ms.map { stats(it) }
-    val s2 = listOf(listOf("Month", "Total spent", "Fixed", "Recurring", "One-offs", "Food delivery", "Delivery orders", "Salary", "Saved / invested", "Left after savings and bills").map { t(it) }) +
+    val saveNames = st.flatMap { s -> s.inc.saves.map { it.name } }.distinct()
+    val s2 = listOf((listOf("Month", "Salary") + saveNames + listOf("Saved / invested", "Total spent", "Fixed", "Recurring", "One-offs", "Food delivery", "Delivery orders", "Left after savings and bills")).map { t(it) }) +
         ms.indices.map { i ->
             val s = st[i]
-            listOf(t(mFull(ms[i])), n(r2(s.total)), n(r2(s.b[Bucket.FIXED]!!)), n(r2(s.b[Bucket.RECURRING]!!)), n(r2(s.b[Bucket.ONEOFF]!!)),
-                n(r2(s.delivSum)), n(s.delivN), n(s.inc.salary), n(s.saved), n(r2(s.net)))
+            listOf(t(mFull(ms[i])), n(s.inc.salary)) + saveNames.map { nm -> n(s.inc.saves.filter { it.name == nm }.sumOf { it.amount }) } +
+                listOf(n(s.saved), n(r2(s.total)), n(r2(s.b[Bucket.FIXED]!!)), n(r2(s.b[Bucket.RECURRING]!!)), n(r2(s.b[Bucket.ONEOFF]!!)),
+                    n(r2(s.delivSum)), n(s.delivN), n(r2(s.net)))
         }
     val ids = cats.keys.filter { c -> entries.any { resolve(it.cat) == c } }
     val s3 = listOf(listOf(t("Category")) + ms.map { t(mFull(it)) }) + ids.map { c -> listOf(t(cats[c]!!.name)) + st.map { n(r2(it.by[c] ?: 0.0)) } }
     return workbook(
-        listOf("Expenses", "Monthly summary", "By category"), listOf(expenseRows(es), s2, s3),
-        listOf(listOf(12, 34, 26, 13, 13), listOf(18, 13, 11, 12, 11, 13, 15, 11, 15, 17), listOf(30) + ms.map { 15 }),
+        listOf("Read me", "Money in and out", "Monthly summary", "Expenses", "By category"), listOf(readMe(), moneyRows(ms), s2, expenseRows(es), s3),
+        listOf(listOf(110), listOf(16, 20, 34, 13, 22), listOf(16, 12) + saveNames.map { 16 } + listOf(15, 13, 11, 12, 11, 13, 15, 17), listOf(12, 34, 26, 13, 13), listOf(30) + ms.map { 15 }),
     )
 }
 
@@ -168,8 +204,8 @@ fun LedgerData.buildMonthXlsx(k: String): ByteArray {
         st.weeks.map { listOf(t("${it.a}–${it.z} ${mShort(k)}"), n(r2(it.rec)), n(r2(it.del))) } +
         listOf(listOf(t("Total"), n(r2(st.b[Bucket.RECURRING]!!)), n(r2(st.delivSum))))
     return workbook(
-        listOf("Summary", "Expenses", "Categories", "One-offs", "Week by week"),
-        listOf(sum, expenseRows(es), catRows, ones, wk),
-        listOf(listOf(26, 16), listOf(12, 34, 26, 13, 13), listOf(30, 10, 14, 10), listOf(34, 12, 14), listOf(18, 16, 22)),
+        listOf("Read me", "Summary", "Money in and out", "Expenses", "Categories", "One-offs", "Week by week"),
+        listOf(readMe(), sum, moneyRows(listOf(k)), expenseRows(es), catRows, ones, wk),
+        listOf(listOf(110), listOf(26, 16), listOf(16, 20, 34, 13, 22), listOf(12, 34, 26, 13, 13), listOf(30, 10, 14, 10), listOf(34, 12, 14), listOf(18, 16, 22)),
     )
 }

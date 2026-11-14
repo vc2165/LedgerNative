@@ -603,7 +603,7 @@ fun ExportScreen(s: AppState) {
                     }
                 }
             }
-            item { Muted("Or pick a month. A single month has five sheets: summary, expenses, categories, one-offs and week by week.", Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) }
+            item { Muted("Or pick a month. Every file includes your salary, each saving and loan, bills and spending, plus a Read me sheet explaining the numbers.", Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) }
             item {
                 SectionCard {
                     ms.forEach { m -> NavRow(mFull(m), "${d.inMonth(m).size} expenses") { month(m) } }
