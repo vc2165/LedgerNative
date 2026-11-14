@@ -1,4 +1,4 @@
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class, androidx.compose.material3.ExperimentalMaterial3Api::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 
 package com.vinay.ledger.ui
 
@@ -75,6 +75,7 @@ fun LedgerApp(s: AppState, locked: Boolean, onUnlock: () -> Unit) {
     BackHandler(enabled = s.stack.isNotEmpty()) { s.pop() }
     BackHandler(enabled = s.stack.isEmpty() && s.tab != Tab.LOG) { s.tab = Tab.LOG }
 
+    androidx.compose.runtime.CompositionLocalProvider(androidx.compose.foundation.LocalOverscrollConfiguration provides null) {
     Box(Modifier.fillMaxSize()) {
         MainTabs(s)
         // Sub-screens slide in over the tabs, like a native navigation stack
@@ -83,10 +84,10 @@ fun LedgerApp(s: AppState, locked: Boolean, onUnlock: () -> Unit) {
             transitionSpec = {
                 // like the original app's bottom sheets: slide up to open, slide down to close
                 if (targetState.first > initialState.first)
-                    (slideInVertically(tween(340, easing = EaseSheet)) { it } togetherWith ExitTransition.KeepUntilTransitionsFinished)
+                    ((slideInVertically(tween(300, easing = EaseSheet)) { it / 6 } + fadeIn(tween(220))) togetherWith ExitTransition.KeepUntilTransitionsFinished)
                         .apply { targetContentZIndex = 1f }
                 else
-                    (EnterTransition.None togetherWith slideOutVertically(tween(220, easing = EaseSheetOut)) { it })
+                    (EnterTransition.None togetherWith (slideOutVertically(tween(200, easing = EaseSheetOut)) { it / 6 } + fadeOut(tween(180))))
                         .apply { targetContentZIndex = -1f }
             },
             contentKey = { it.first },
@@ -96,6 +97,7 @@ fun LedgerApp(s: AppState, locked: Boolean, onUnlock: () -> Unit) {
                 Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) { RouteScreen(s, route) }
             } else Box(Modifier)
         }
+    }
     }
 }
 
@@ -118,7 +120,7 @@ private fun RouteScreen(s: AppState, r: Route) {
 @Composable
 private fun MainTabs(s: AppState) {
     var fabExpanded by remember { mutableStateOf(true) }
-    val shift = with(androidx.compose.ui.platform.LocalDensity.current) { 28.dp.roundToPx() }
+    val shift = with(androidx.compose.ui.platform.LocalDensity.current) { 16.dp.roundToPx() }
     Scaffold(
         snackbarHost = { SnackbarHost(s.snackbar) },
         floatingActionButton = {

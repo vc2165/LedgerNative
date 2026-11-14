@@ -101,7 +101,7 @@ fun ReportScreen(s: AppState, modifier: Modifier) {
         topBar = { MonthBar(s, scroll, search = false) },
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
     ) { pad ->
-        val shift = with(androidx.compose.ui.platform.LocalDensity.current) { 28.dp.roundToPx() }
+        val shift = with(androidx.compose.ui.platform.LocalDensity.current) { 16.dp.roundToPx() }
         AnimatedContent(
             targetState = s.month,
             transitionSpec = {

@@ -71,6 +71,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -94,12 +96,27 @@ import java.time.LocalDate
 
 /** Month title + arrows, shared by Ledger and Report. Swiping sideways also changes month. */
 fun Modifier.monthSwipe(s: AppState): Modifier = this.pointerInput(Unit) {
-    var dx = 0f
-    detectHorizontalDragGestures(
-        onDragStart = { dx = 0f },
-        onDragEnd = { if (dx < -140) shiftMonth(s, 1) else if (dx > 140) shiftMonth(s, -1) },
-        onHorizontalDrag = { _, d -> dx += d },
-    )
+    // Only a deliberate swipe changes month: at least 35% of the screen width, clearly sideways
+    // (2.5x more horizontal than vertical) and done within about half a second.
+    awaitEachGesture {
+        val down = awaitFirstDown(requireUnconsumed = false)
+        val t0 = down.uptimeMillis
+        var dx = 0f
+        var dy = 0f
+        var ended = false
+        while (!ended) {
+            val ev = awaitPointerEvent(androidx.compose.ui.input.pointer.PointerEventPass.Final)
+            val ch = ev.changes.firstOrNull { it.id == down.id } ?: break
+            dx += ch.position.x - ch.previousPosition.x
+            dy += ch.position.y - ch.previousPosition.y
+            if (!ch.pressed) {
+                ended = true
+                val quick = ch.uptimeMillis - t0 < 550
+                if (quick && kotlin.math.abs(dx) > size.width * 0.35f && kotlin.math.abs(dx) > kotlin.math.abs(dy) * 2.5f)
+                    shiftMonth(s, if (dx < 0) 1 else -1)
+            }
+        }
+    }
 }
 
 fun shiftMonth(s: AppState, n: Int) { s.tick("tick"); s.month = addMonth(s.month, n) }
@@ -136,7 +153,7 @@ fun LogScreen(s: AppState, modifier: Modifier, onFab: (Boolean) -> Unit) {
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
     ) { pad ->
         var prev by remember { mutableStateOf(s.month) }
-        val shift = with(androidx.compose.ui.platform.LocalDensity.current) { 28.dp.roundToPx() }
+        val shift = with(androidx.compose.ui.platform.LocalDensity.current) { 16.dp.roundToPx() }
         AnimatedContent(
             targetState = s.month,
             transitionSpec = {
@@ -293,7 +310,7 @@ fun SwipeEntry(s: AppState, e: Entry) {
     val scope = androidx.compose.runtime.rememberCoroutineScope()
     val off = remember { androidx.compose.animation.core.Animatable(0f) }
     var width by remember { mutableStateOf(1f) }
-    val past = off.value < -width * 0.5f
+    val past = off.value < -width * 0.6f
     LaunchedEffect(past) { if (past) s.tick("tick") }
     Box(Modifier.fillMaxWidth().onSizeChanged { width = it.width.toFloat().coerceAtLeast(1f) }) {
         if (off.value < -1f) {
@@ -316,7 +333,7 @@ fun SwipeEntry(s: AppState, e: Entry) {
                     },
                     orientation = androidx.compose.foundation.gestures.Orientation.Horizontal,
                     onDragStopped = {
-                        if (off.value < -width * 0.5f) {
+                        if (off.value < -width * 0.6f) {
                             off.animateTo(-width, tween(160))
                             deleteEntry(s, e)
                         } else off.animateTo(0f, androidx.compose.animation.core.spring(dampingRatio = 0.8f))
