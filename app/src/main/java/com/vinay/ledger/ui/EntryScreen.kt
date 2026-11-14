@@ -59,6 +59,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -258,19 +260,31 @@ fun EntryScreen(s: AppState, r: Route.EntryEdit) {
                 }
                 if (ids.size > 8) TextButton(onClick = { allCats = !allCats }) { Text(if (allCats) "Fewer" else "All categories") }
             }
-            // Type
-            FieldLabel("Type")
-            val opts = listOf<Pair<Bucket?, String>>(null to "Recurring", Bucket.FIXED to "Fixed", Bucket.ONEOFF to "One-off")
-            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                opts.forEachIndexed { i, (b, l) ->
-                    SegmentedButton(
-                        selected = bucket == b,
-                        onClick = { bucket = b; s.tick("tick") },
-                        shape = SegmentedButtonDefaults.itemShape(i, opts.size),
-                    ) { Text(l) }
+            // Type: optional, tucked away like the original app. Nothing set = counts as recurring.
+            var showType by remember { mutableStateOf(bucket != null) }
+            Row(
+                Modifier.fillMaxWidth().padding(top = 14.dp).clip(RoundedCornerShape(12.dp)).clickable { showType = !showType }.padding(vertical = 10.dp, horizontal = 2.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("Type: " + (bucket?.label ?: "not set"), Modifier.weight(1f), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(if (showType) "Hide" else "Change", color = Purple, fontWeight = FontWeight.Medium)
+            }
+            androidx.compose.animation.AnimatedVisibility(showType) {
+                Column {
+                    val opts = listOf<Pair<Bucket?, String>>(null to "None", Bucket.FIXED to "Fixed", Bucket.ONEOFF to "One-off")
+                    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                        opts.forEachIndexed { i, (b, l) ->
+                            SegmentedButton(
+                                selected = bucket == b,
+                                onClick = { bucket = b; s.tick("tick") },
+                                shape = SegmentedButtonDefaults.itemShape(i, opts.size),
+                            ) { Text(l) }
+                        }
+                    }
+                    Muted("Optional. Expenses without a type count as recurring in reports and budgets.", Modifier.padding(top = 8.dp))
                 }
             }
-            Muted("Recurring is the default. Fixed is for rent and bills, One-off for things that don't repeat.", Modifier.padding(top = 8.dp, bottom = 24.dp))
+            Spacer(Modifier.height(24.dp))
         }
     }
 
