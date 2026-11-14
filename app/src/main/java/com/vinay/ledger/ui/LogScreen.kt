@@ -60,6 +60,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.gestures.draggable
+import kotlinx.coroutines.launch
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
@@ -279,27 +283,47 @@ private fun DayCard(s: AppState, date: String, es: List<Entry>) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * Swipe left to delete, made deliberate: it only deletes if you drag past half the row's width
+ * and let go there. A quick flick never deletes. Crossing the halfway point gives a small tick
+ * and the label changes to "Release to delete".
+ */
 @Composable
 fun SwipeEntry(s: AppState, e: Entry) {
-    val state = rememberSwipeToDismissBoxState(
-        confirmValueChange = {
-            if (it == SwipeToDismissBoxValue.EndToStart) { deleteEntry(s, e); true } else false
-        },
-        positionalThreshold = { it * 0.4f },
-    )
-    SwipeToDismissBox(
-        state = state,
-        enableDismissFromStartToEnd = false,
-        backgroundContent = {
-            val active = state.targetValue == SwipeToDismissBoxValue.EndToStart
-            val bg by animateColorAsState(if (active) Bad else Bad.copy(alpha = .75f), label = "bg")
-            val sc by animateFloatAsState(1f, label = "icon")
-            Box(Modifier.fillMaxSize().clip(RoundedCornerShape(14.dp)).background(bg).padding(end = 20.dp), contentAlignment = Alignment.CenterEnd) {
-                Icon(Icons.Outlined.Delete, "Delete", tint = Color.White, modifier = Modifier.scale(sc))
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    val off = remember { androidx.compose.animation.core.Animatable(0f) }
+    var width by remember { mutableStateOf(1f) }
+    val past = off.value < -width * 0.5f
+    LaunchedEffect(past) { if (past) s.tick("tick") }
+    Box(Modifier.fillMaxWidth().onSizeChanged { width = it.width.toFloat().coerceAtLeast(1f) }) {
+        if (off.value < -1f) {
+            val bg by animateColorAsState(if (past) Bad else Color(0xFFF3B9BE), label = "bg")
+            Row(
+                Modifier.matchParentSize().clip(RoundedCornerShape(14.dp)).background(bg).padding(end = 20.dp),
+                horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(if (past) "Release to delete" else "Delete", color = if (past) Color.White else Bad, fontWeight = FontWeight.Medium)
+                Spacer(Modifier.width(8.dp))
+                Icon(Icons.Outlined.Delete, null, tint = if (past) Color.White else Bad)
             }
-        },
-    ) { EntryRow(s, e) { s.push(Route.EntryEdit(e.id)) } }
+        }
+        Box(
+            Modifier
+                .offset { androidx.compose.ui.unit.IntOffset(off.value.toInt(), 0) }
+                .draggable(
+                    state = androidx.compose.foundation.gestures.rememberDraggableState { d ->
+                        scope.launch { off.snapTo((off.value + d).coerceIn(-width, 0f)) }
+                    },
+                    orientation = androidx.compose.foundation.gestures.Orientation.Horizontal,
+                    onDragStopped = {
+                        if (off.value < -width * 0.5f) {
+                            off.animateTo(-width, tween(160))
+                            deleteEntry(s, e)
+                        } else off.animateTo(0f, androidx.compose.animation.core.spring(dampingRatio = 0.8f))
+                    },
+                )
+        ) { EntryRow(s, e) { s.push(Route.EntryEdit(e.id)) } }
+    }
 }
 
 @Composable
