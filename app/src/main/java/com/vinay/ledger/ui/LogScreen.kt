@@ -241,7 +241,25 @@ private fun Hero(s: AppState, st: MonthStats) {
                         Meter("Delivery", inr(st.delivSum), f(st.delivSum, b.delivery), of(b.delivery), Modifier.weight(1f))
                         Meter("One-offs", inr(st.b[Bucket.ONEOFF]!!), f(st.b[Bucket.ONEOFF]!!, b.oneoff), of(b.oneoff), Modifier.weight(1f))
                     }
-                    HorizontalDivider(Modifier.padding(vertical = 12.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .6f))
+                    HorizontalDivider(Modifier.padding(top = 12.dp, bottom = 4.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .6f))
+                    // Everything leaving your salary this month: expenses + savings/loan + bills not paid yet
+                    val pending = st.pendingList.sumOf { it.amount }
+                    val out = st.total + st.saved + pending
+                    Row(
+                        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable { s.tick(); s.push(Route.MoneyOut(st.key)) }.padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text("Total going out", style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                "Spent ${inr(st.total)} + saved ${inr(st.saved)}" + if (pending > 0) " + bills ${inr(pending)}" else "",
+                                style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline,
+                            )
+                        }
+                        Text(inr(out), fontWeight = FontWeight.SemiBold)
+                        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.outline)
+                    }
+                    HorizontalDivider(Modifier.padding(top = 4.dp, bottom = 12.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .6f))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("Left after savings" + if (st.bills.isNotEmpty()) " and bills" else "", Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
                         Text(inr(st.net), fontWeight = FontWeight.SemiBold, color = if (st.net < 0) Bad else Good)

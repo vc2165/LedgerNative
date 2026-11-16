@@ -33,6 +33,7 @@ enum class Tab { LOG, REPORT, TREND, SETTINGS }
 sealed interface Route {
     data class EntryEdit(val id: String?, val preDesc: String? = null, val preAmt: Double? = null, val preFixed: Boolean = false) : Route
     data object Search : Route
+    data class MoneyOut(val month: String) : Route
     data class TypeList(val month: String, val bucket: com.vinay.ledger.data.Bucket) : Route
     data class PlanEdit(val month: String?) : Route
     data object Budgets : Route

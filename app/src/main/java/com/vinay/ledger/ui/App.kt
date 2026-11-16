@@ -106,6 +106,7 @@ private fun RouteScreen(s: AppState, r: Route) {
     when (r) {
         is Route.EntryEdit -> EntryScreen(s, r)
         Route.Search -> SearchScreen(s)
+        is Route.MoneyOut -> MoneyOutScreen(s, r.month)
         is Route.TypeList -> TypeListScreen(s, r.month, r.bucket)
         is Route.PlanEdit -> PlanScreen(s, r.month)
         Route.Budgets -> BudgetsScreen(s)
